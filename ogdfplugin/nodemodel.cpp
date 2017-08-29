@@ -14,6 +14,9 @@
 #include "nodemodel.h"
 #include "graph.h"
 
+#define forall_nodes(v,G) for((v)=(G).firstNode(); (v); (v)=(v)->succ())
+
+
 NodeModel::NodeModel(Graph *graph)
     : QAbstractListModel(graph), ogdf::GraphObserver(&graph->g()),
       m_graph(graph)

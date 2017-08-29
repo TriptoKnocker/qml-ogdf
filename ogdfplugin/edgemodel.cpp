@@ -16,6 +16,9 @@
 #include <QQmlInfo>
 #include <QPointF>
 
+#define forall_edges(e,G) for((e)=(G).firstEdge(); (e); (e)=(e)->succ())
+
+
 EdgeModel::EdgeModel(Graph *graph)
     : QAbstractListModel(graph), ogdf::GraphObserver(&graph->g()),
       m_graph(graph)

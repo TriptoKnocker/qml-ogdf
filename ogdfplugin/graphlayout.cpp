@@ -19,16 +19,9 @@
 #include "ogdf/energybased/FastMultipoleEmbedder.h"
 #include "ogdf/energybased/GEMLayout.h"
 #include "ogdf/energybased/MultilevelLayout.h"
-#include "ogdf/energybased/SpringEmbedderFR.h"
 #include "ogdf/energybased/SpringEmbedderFRExact.h"
 #include "ogdf/energybased/SpringEmbedderKK.h"
 #include "ogdf/energybased/StressMinimization.h"
-#include "ogdf/energybased/multilevelmixer/MMMExampleFastLayout.h"
-#include "ogdf/energybased/multilevelmixer/MMMExampleNiceLayout.h"
-#include "ogdf/energybased/multilevelmixer/MMMExampleNoTwistLayout.h"
-#include "ogdf/energybased/multilevelmixer/MixedForceLayout.h"
-#include "ogdf/energybased/multilevelmixer/ModularMultilevelMixer.h"
-#include "ogdf/energybased/multilevelmixer/ScalingLayout.h"
 #include "ogdf/layered/SugiyamaLayout.h"
 #include "ogdf/misclayout/BalloonLayout.h"
 #include "ogdf/misclayout/CircularLayout.h"
@@ -43,7 +36,6 @@
 #include "ogdf/tree/RadialTreeLayout.h"
 #include "ogdf/tree/TreeLayout.h"
 #include "ogdf/upward/DominanceLayout.h"
-#include "ogdf/upward/UpwardPlanarizationLayout.h"
 #include "ogdf/upward/VisibilityLayout.h"
 #include <QQmlInfo>
 
@@ -81,10 +73,6 @@ void GraphLayout::setAlgorithm(Algorithm algorithm)
     CREATE_MODULE(FastMultipoleEmbedder);
     CREATE_MODULE(FastMultipoleMultilevelEmbedder);
     CREATE_MODULE(GEMLayout);
-    CREATE_MODULE(MMMExampleFastLayout);
-    CREATE_MODULE(MMMExampleNiceLayout);
-    CREATE_MODULE(MMMExampleNoTwistLayout);
-    CREATE_MODULE(MixedForceLayout);
     CREATE_MODULE(MixedModelLayout);
     CREATE_MODULE(ModularMultilevelMixer);
     CREATE_MODULE(MultilevelLayout);
@@ -96,14 +84,12 @@ void GraphLayout::setAlgorithm(Algorithm algorithm)
     CREATE_MODULE(RadialTreeLayout);
     CREATE_MODULE(ScalingLayout);
     CREATE_MODULE(SchnyderLayout);
-    CREATE_MODULE(SpringEmbedderFR);
     CREATE_MODULE(SpringEmbedderFRExact);
     CREATE_MODULE(SpringEmbedderKK);
     CREATE_MODULE(StressMinimization);
     CREATE_MODULE(SugiyamaLayout);
     CREATE_MODULE(TreeLayout);
     CREATE_MODULE(TutteLayout);
-    CREATE_MODULE(UpwardPlanarizationLayout);
     CREATE_MODULE(VisibilityLayout);
     }
     if (layout) {
@@ -129,86 +115,86 @@ void GraphLayout::call()
         m_valid = true;
         emit validChanged();
     } catch (ogdf::AlgorithmFailureException &e) {
-        QString reason = QString("of an unknown reason (%1)").arg(e.exceptionCode());
+        QString reason = QString("of an unknown reason (%1)").arg(static_cast<std::underlying_type<ogdf::AlgorithmFailureCode>::type>(e.exceptionCode()));
         switch (e.exceptionCode()) {
-        case ogdf::afcUnknown:
+        case ogdf::AlgorithmFailureCode::Unknown:
             // Do nothing.
             break;
-        case ogdf::afcIllegalParameter:
+        case ogdf::AlgorithmFailureCode::IllegalParameter:
             reason = "of an illegal parameter";
             break;
-        case ogdf::afcNoFlow:
+        case ogdf::AlgorithmFailureCode::NoFlow:
             reason = "min-cost flow solver could not find a legal flow";
             break;
-        case ogdf::afcSort:
+        case ogdf::AlgorithmFailureCode::Sort:
             reason = "sequence is not sorted";
             break;
-        case ogdf::afcLabel:
+        case ogdf::AlgorithmFailureCode::Label:
             reason = "labelling failed";
             break;
-        case ogdf::afcExternalFace:
+        case ogdf::AlgorithmFailureCode::ExternalFace:
             reason = "external face is not correct";
             break;
-        case ogdf::afcForbiddenCrossing:
+        case ogdf::AlgorithmFailureCode::ForbiddenCrossing:
             reason = "crossing were forbidden";
             break;
-        case ogdf::afcTimelimitExceeded:
+        case ogdf::AlgorithmFailureCode::TimelimitExceeded:
             reason = "timelimit exceeded";
             break;
-        case ogdf::afcNoSolutionFound:
+        case ogdf::AlgorithmFailureCode::NoSolutionFound:
             reason = "it could not find a solution";
             break;
-        case ogdf::afcSTOP:
+        case ogdf::AlgorithmFailureCode::STOP:
             // Do nothing.
             break;
         }
         qmlInfo(this) << "Layout algorithm failed, because " << reason;
     } catch (ogdf::PreconditionViolatedException &e) {
-        QString reason = QString("An unknown reason (%1)").arg(e.exceptionCode());
+        QString reason = QString("An unknown reason (%1)").arg(static_cast<std::underlying_type<ogdf::PreconditionViolatedCode>::type>(e.exceptionCode()));
         switch (e.exceptionCode()) {
-        case ogdf::pvcUnknown:
+        case ogdf::PreconditionViolatedCode::Unknown:
             // Do nothing.
             break;
-        case ogdf::pvcSelfLoop:
+        case ogdf::PreconditionViolatedCode::SelfLoop:
             reason = "Graph contains a self-loop, which";
             break;
-        case ogdf::pvcTreeHierarchies:
+        case ogdf::PreconditionViolatedCode::TreeHierarchies:
             reason = "Graph is not a tree, which";
             break;
-        case ogdf::pvcAcyclicHierarchies:
+        case ogdf::PreconditionViolatedCode::AcyclicHierarchies:
             reason = "Graph is not acyclic, which";
             break;
-        case ogdf::pvcSingleSource:
+        case ogdf::PreconditionViolatedCode::SingleSource:
             reason = "Graph has not a single source, which";
             break;
-        case ogdf::pvcUpwardPlanar:
+        case ogdf::PreconditionViolatedCode::UpwardPlanar:
             reason = "Graph is not upward planar, which";
             break;
-        case ogdf::pvcTree:
+        case ogdf::PreconditionViolatedCode::Tree:
             reason = "Graph is not a rooted tree, which";
             break;
-        case ogdf::pvcForest:
+        case ogdf::PreconditionViolatedCode::Forest:
             reason = "Graph is not a rooted forest, which";
             break;
-        case ogdf::pvcOrthogonal:
+        case ogdf::PreconditionViolatedCode::Orthogonal:
             reason = "Layout is not orthogonal, which";
             break;
-        case ogdf::pvcPlanar:
+        case ogdf::PreconditionViolatedCode::Planar:
             reason = "Graph is not planar, which";
             break;
-        case ogdf::pvcClusterPlanar:
+        case ogdf::PreconditionViolatedCode::ClusterPlanar:
             reason = "Graph is not cluster planar, which";
             break;
-        case ogdf::pvcNoCopy:
+        case ogdf::PreconditionViolatedCode::NoCopy:
             reason = "Graph is not a copy of the corresponding graph, which";
             break;
-        case ogdf::pvcConnected:
+        case ogdf::PreconditionViolatedCode::Connected:
             reason = "Graph is not connected, which";
             break;
-        case ogdf::pvcBiconnected:
+        case ogdf::PreconditionViolatedCode::Biconnected:
             reason = "Graph is not twoconnected, which";
             break;
-        case ogdf::pvcSTOP:
+        case ogdf::PreconditionViolatedCode::STOP:
             // Do nothing.
             break;
         }
